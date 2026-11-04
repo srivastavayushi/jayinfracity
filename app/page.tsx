@@ -1,76 +1,55 @@
-import { ArrowRight, Building2, CalendarDays, Check, Compass, ExternalLink, MapPin, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
+'use client';
+
+import { useState } from 'react';
+import { ArrowRight, Building2, CalendarDays, Compass, ExternalLink, Languages, MapPin, MessageCircle, Phone, ShieldCheck } from 'lucide-react';
 
 const listingUrl = 'https://www.justdial.com/Ayodhya/Jay-Infracity-Pvt-Ltd-Near-Saket-Press-Khawaspura-Acharya-Narendra-Dev-Nagar/9999PX527-X527-191004124048-G9X4_BZDET';
-const propertySlots = [
-  { no: '01', label: 'Property name', meta: 'Location · Plot size · Status' },
-  { no: '02', label: 'Property name', meta: 'Location · Plot size · Status' },
-  { no: '03', label: 'Property name', meta: 'Location · Plot size · Status' },
-];
+type Language = 'en' | 'hi';
 
-function WhatsAppButton({ label = 'Enquire on WhatsApp', compact = false }: { label?: string; compact?: boolean }) {
-  return <a className={`wa-button${compact ? ' wa-button--compact' : ''}`} href="#contact" aria-label={`${label}. WhatsApp number is required before activation`}><MessageCircle size={compact ? 17 : 20} /> {label} <ArrowRight size={17} /></a>;
+const copy = {
+  en: {
+    about: 'About', properties: 'Properties', contact: 'Contact', language: 'हिंदी', waEnquiry: 'WhatsApp enquiry', location: 'Ayodhya, Uttar Pradesh',
+    hero1: 'Find your place', hero2: 'in a city', heroEm: 'rising.', heroCopy: 'Local real estate guidance for people exploring plots and property opportunities in and around Ayodhya.', exploreProperties: 'Explore properties', setupNote: 'WhatsApp number required · button opens the setup section for now',
+    listingRef: 'Business listing reference', area: 'Acharya Narendra Dev Nagar, Ayodhya', viewJustdial: 'View on Justdial', localContact: 'A local point of contact', decisions: 'Property decisions,', personal: 'made personal.',
+    aboutP1: 'Jay Infracity Pvt. Ltd. is listed in Ayodhya as a real estate agent serving people looking for residential plots and other property guidance.', aboutP2: 'This website is designed to make the first conversation simple: review the available information, then move directly to WhatsApp for a personal response.', start: 'Start a conversation',
+    explore: 'Explore', exploreText: 'Share what kind of property you are looking for.', plan: 'Plan', planText: 'Coordinate a conversation or site visit directly.', connect: 'Connect', connectText: 'Continue the enquiry on WhatsApp without a long form.',
+    opportunities: 'Current opportunities', propertiesTitle: 'Properties, when', ready: 'you’re ready.', inventory: 'Inventory has intentionally not been invented. Replace these clearly marked cards with verified project details, photography, availability, and pricing.', placeholder: 'CONTENT PLACEHOLDER', supplied: 'To be supplied', propertyName: 'Property name', propertyMeta: 'Location · Plot size · Status', askProperty: 'Ask about this property', noUnverified: 'No unverified listings', inventoryNote: 'Only approved property information should be published here. Send the project names, locations, images, sizes, status, and prices you want displayed.',
+    speak: 'Let’s speak directly', nextStep: 'Your next step', message: 'starts with a message.', contactCopy: 'Once the father’s WhatsApp number is added, every green button on this website will open a pre-filled WhatsApp enquiry.', action: 'Action required', addNumber: 'Add the father’s WhatsApp number', numberHelp: 'Send the full number with country code (for example, India uses +91). It will only be wired in after you provide it.', inactive: 'PLACEHOLDER — NOT ACTIVE', awaiting: 'WhatsApp link awaiting number', addressLabel: 'Office address from supplied listing', address: 'Office No. 4/6/109, Near Saket Press Khawaspura, Rampath Marg, Acharya Narendra Dev Nagar, Ayodhya – 224001, Uttar Pradesh', verify: 'Verify on Justdial',
+    finalDetails: 'Ready for the final details', supply: 'Supply. Verify.', launch: 'Launch.', sendNumber: 'Send the full number with country code.', shareListings: 'Share approved listings and photos.', publish: 'Publish', publishText: 'Use GitHub Pages or connect a custom domain.', footer: 'Real estate enquiries in Ayodhya.', listing: 'Justdial listing', imageSource: 'Hero image source', back: 'Back to top ↑', requiredLabel: 'WhatsApp number is required before activation',
+  },
+  hi: {
+    about: 'हमारे बारे में', properties: 'प्रॉपर्टीज़', contact: 'संपर्क', language: 'English', waEnquiry: 'WhatsApp पर पूछें', location: 'अयोध्या, उत्तर प्रदेश',
+    hero1: 'अपनी सही जगह पाएँ', hero2: 'एक उभरते शहर में', heroEm: 'अपना भविष्य।', heroCopy: 'अयोध्या और उसके आसपास प्लॉट व प्रॉपर्टी के अवसर तलाशने वालों के लिए स्थानीय रियल एस्टेट मार्गदर्शन।', exploreProperties: 'प्रॉपर्टीज़ देखें', setupNote: 'WhatsApp नंबर आवश्यक है · अभी यह बटन सेटअप सेक्शन खोलेगा',
+    listingRef: 'व्यवसाय लिस्टिंग संदर्भ', area: 'आचार्य नरेंद्र देव नगर, अयोध्या', viewJustdial: 'Justdial पर देखें', localContact: 'आपका स्थानीय संपर्क', decisions: 'प्रॉपर्टी के फैसले,', personal: 'व्यक्तिगत मार्गदर्शन के साथ।',
+    aboutP1: 'Jay Infracity Pvt. Ltd. अयोध्या में आवासीय प्लॉट और अन्य प्रॉपर्टी मार्गदर्शन देने वाले रियल एस्टेट एजेंट के रूप में सूचीबद्ध है।', aboutP2: 'यह वेबसाइट पहली बातचीत आसान बनाती है—जानकारी देखें और व्यक्तिगत जवाब के लिए सीधे WhatsApp पर जुड़ें।', start: 'बातचीत शुरू करें',
+    explore: 'खोजें', exploreText: 'बताएँ कि आप किस तरह की प्रॉपर्टी तलाश रहे हैं।', plan: 'योजना बनाएँ', planText: 'सीधे बातचीत या साइट विज़िट तय करें।', connect: 'जुड़ें', connectText: 'लंबा फॉर्म भरे बिना WhatsApp पर पूछताछ जारी रखें।',
+    opportunities: 'मौजूदा अवसर', propertiesTitle: 'प्रॉपर्टीज़, जब', ready: 'आप तैयार हों।', inventory: 'यहाँ कोई काल्पनिक इन्वेंटरी नहीं जोड़ी गई है। इन कार्डों को सत्यापित प्रोजेक्ट विवरण, फ़ोटो, उपलब्धता और कीमत से बदलें।', placeholder: 'जानकारी का स्थान', supplied: 'जानकारी देनी है', propertyName: 'प्रॉपर्टी का नाम', propertyMeta: 'स्थान · प्लॉट साइज़ · स्थिति', askProperty: 'इस प्रॉपर्टी के बारे में पूछें', noUnverified: 'कोई असत्यापित लिस्टिंग नहीं', inventoryNote: 'यहाँ केवल स्वीकृत प्रॉपर्टी जानकारी प्रकाशित होगी। प्रोजेक्ट नाम, स्थान, तस्वीरें, साइज़, स्थिति और कीमत भेजें।',
+    speak: 'सीधे बात करें', nextStep: 'आपका अगला कदम', message: 'एक संदेश से शुरू होता है।', contactCopy: 'पिता का WhatsApp नंबर जुड़ने के बाद हर हरा बटन पहले से तैयार संदेश के साथ WhatsApp खोलेगा।', action: 'जानकारी आवश्यक', addNumber: 'पिता का WhatsApp नंबर जोड़ें', numberHelp: 'देश कोड सहित पूरा नंबर भेजें (भारत के लिए +91)। आपके देने के बाद ही इसे सक्रिय किया जाएगा।', inactive: 'प्लेसहोल्डर — सक्रिय नहीं', awaiting: 'WhatsApp नंबर की प्रतीक्षा', addressLabel: 'दी गई लिस्टिंग से कार्यालय का पता', address: 'ऑफिस नं. 4/6/109, साकेत प्रेस खवासपुरा के पास, रामपथ मार्ग, आचार्य नरेंद्र देव नगर, अयोध्या – 224001, उत्तर प्रदेश', verify: 'Justdial पर सत्यापित करें',
+    finalDetails: 'अंतिम जानकारी के लिए तैयार', supply: 'जानकारी दें। सत्यापित करें।', launch: 'लॉन्च करें।', sendNumber: 'देश कोड सहित पूरा नंबर भेजें।', shareListings: 'स्वीकृत लिस्टिंग और तस्वीरें साझा करें।', publish: 'प्रकाशित करें', publishText: 'GitHub Pages या कस्टम डोमेन का उपयोग करें।', footer: 'अयोध्या में रियल एस्टेट पूछताछ।', listing: 'Justdial लिस्टिंग', imageSource: 'मुख्य तस्वीर का स्रोत', back: 'ऊपर जाएँ ↑', requiredLabel: 'सक्रिय करने से पहले WhatsApp नंबर आवश्यक है',
+  },
+};
+
+function WhatsAppButton({ label, requiredLabel, compact = false }: { label: string; requiredLabel: string; compact?: boolean }) {
+  return <a className={`wa-button${compact ? ' wa-button--compact' : ''}`} href="#contact" aria-label={`${label}. ${requiredLabel}`}><MessageCircle size={compact ? 17 : 20} /> {label} <ArrowRight size={17} /></a>;
 }
 
 export default function Home() {
+  const [language, setLanguage] = useState<Language>('en');
+  const t = copy[language];
+  const toggleLanguage = () => setLanguage(language === 'en' ? 'hi' : 'en');
   return (
-    <main>
+    <main lang={language === 'hi' ? 'hi' : 'en'}>
       <header className="site-header">
         <a className="brand" href="#home" aria-label="Jay Infracity home"><span className="brand-mark"><Building2 size={21} /></span><span>JAY INFRACITY<small>PVT. LTD.</small></span></a>
-        <nav aria-label="Main navigation"><a href="#about">About</a><a href="#properties">Properties</a><a href="#contact">Contact</a></nav>
-        <a className="wa-button wa-button--header" href="#contact"><MessageCircle size={17} /> WhatsApp enquiry</a>
+        <nav aria-label="Main navigation"><a href="#about">{t.about}</a><a href="#properties">{t.properties}</a><a href="#contact">{t.contact}</a></nav>
+        <div className="header-actions"><button className="language-button" onClick={toggleLanguage} aria-label={`Change language to ${t.language}`}><Languages size={16} /><span>{t.language}</span></button><a className="wa-button wa-button--header" href="#contact"><MessageCircle size={17} /> {t.waEnquiry}</a></div>
       </header>
-
-      <section className="hero" id="home">
-        <div className="hero-photo" role="img" aria-label="Aerial view of Ayodhya riverfront" /><div className="hero-shade" />
-        <div className="hero-content">
-          <p className="eyebrow"><MapPin size={15} /> Ayodhya, Uttar Pradesh</p>
-          <h1>Find your place<br />in a city <em>rising.</em></h1>
-          <p className="hero-copy">Local real estate guidance for people exploring plots and property opportunities in and around Ayodhya.</p>
-          <div className="hero-actions"><WhatsAppButton /><a className="text-link" href="#properties">Explore properties</a></div>
-          <p className="setup-note">WhatsApp number required · button opens the setup section for now</p>
-        </div>
-        <a className="listing-card" href={listingUrl} target="_blank" rel="noreferrer"><span className="listing-kicker">Business listing reference</span><strong>Jay Infracity Pvt. Ltd.</strong><span>Acharya Narendra Dev Nagar, Ayodhya</span><span className="listing-link">View on Justdial <ArrowRight size={15} /></span></a>
-      </section>
-
-      <section className="intro section" id="about">
-        <div className="section-label"><span>01</span> About</div>
-        <div className="intro-grid">
-          <div><p className="eyebrow dark">A local point of contact</p><h2>Property decisions,<br /><em>made personal.</em></h2></div>
-          <div className="intro-copy"><p>Jay Infracity Pvt. Ltd. is listed in Ayodhya as a real estate agent serving people looking for residential plots and other property guidance.</p><p>This website is designed to make the first conversation simple: review the available information, then move directly to WhatsApp for a personal response.</p><WhatsAppButton label="Start a conversation" /></div>
-        </div>
-        <div className="service-row">
-          <article><Compass /><span>Explore</span><strong>Share what kind of property you are looking for.</strong></article>
-          <article><CalendarDays /><span>Plan</span><strong>Coordinate a conversation or site visit directly.</strong></article>
-          <article><MessageCircle /><span>Connect</span><strong>Continue the enquiry on WhatsApp without a long form.</strong></article>
-        </div>
-      </section>
-
-      <section className="properties section" id="properties">
-        <div className="section-label light"><span>02</span> Properties</div>
-        <div className="section-heading-row"><div><p className="eyebrow">Current opportunities</p><h2>Properties, when<br /><em>you’re ready.</em></h2></div><p>Inventory has intentionally not been invented. Replace these clearly marked cards with verified project details, photography, availability, and pricing.</p></div>
-        <div className="property-grid">
-          {propertySlots.map((item) => <article className="property-card" key={item.no}><div className="property-visual"><span>CONTENT PLACEHOLDER</span><strong>{item.no}</strong></div><div className="property-body"><span className="placeholder-tag">To be supplied</span><h3>{item.label}</h3><p>{item.meta}</p><WhatsAppButton label="Ask about this property" compact /></div></article>)}
-        </div>
-        <div className="inventory-note"><ShieldCheck /><div><strong>No unverified listings</strong><p>Only approved property information should be published here. Send the project names, locations, images, sizes, status, and prices you want displayed.</p></div></div>
-      </section>
-
-      <section className="contact section" id="contact">
-        <div className="section-label"><span>03</span> Contact</div>
-        <div className="contact-grid">
-          <div><p className="eyebrow dark">Let’s speak directly</p><h2>Your next step<br />starts with a <em>message.</em></h2><p className="contact-copy">Once the father’s WhatsApp number is added, every green button on this website will open a pre-filled WhatsApp enquiry.</p></div>
-          <div className="setup-card"><span className="placeholder-tag">Action required</span><MessageCircle size={42} /><h3>Add the father’s WhatsApp number</h3><p>Send the full number with country code (for example, India uses +91). It will not be displayed as invented content; it will only be wired in after you provide it.</p><div className="number-placeholder"><Phone size={18} /><span>+91 ••••• •••••</span><small>PLACEHOLDER — NOT ACTIVE</small></div><a className="wa-button is-disabled" href="#contact" aria-disabled="true"><MessageCircle size={19} /> WhatsApp link awaiting number</a></div>
-        </div>
-        <div className="location-strip">
-          <MapPin /><div><span>Office address from supplied listing</span><strong>Office No. 4/6/109, Near Saket Press Khawaspura, Rampath Marg, Acharya Narendra Dev Nagar, Ayodhya – 224001, Uttar Pradesh</strong></div><a href={listingUrl} target="_blank" rel="noreferrer">Verify on Justdial <ExternalLink size={15} /></a>
-        </div>
-      </section>
-
-      <section className="launch-section">
-        <div><p className="eyebrow">Ready for the final details</p><h2>Supply. Verify.<br /><em>Launch.</em></h2></div>
-        <ol><li><span>1</span><p><strong>WhatsApp</strong>Send the full number with country code.</p></li><li><span>2</span><p><strong>Properties</strong>Share approved listings and photos.</p></li><li><span>3</span><p><strong>Publish</strong>Use a hosted Sites link or connect a custom domain.</p></li></ol>
-      </section>
-
-      <footer><a className="brand footer-brand" href="#home"><span className="brand-mark"><Building2 size={20} /></span><span>JAY INFRACITY<small>PVT. LTD.</small></span></a><p>Real estate enquiries in Ayodhya.</p><div><a href={listingUrl} target="_blank" rel="noreferrer">Justdial listing</a><a href="https://nowayodhya.com/the-history-of-ayodhya-tracing-the-roots-of-a-holy-city/" target="_blank" rel="noreferrer">Hero image source</a><a href="#home">Back to top ↑</a></div></footer>
+      <section className="hero" id="home"><div className="hero-photo" role="img" aria-label="Aerial view of Ayodhya riverfront" /><div className="hero-shade" /><div className="hero-content"><p className="eyebrow"><MapPin size={15} /> {t.location}</p><h1>{t.hero1}<br />{t.hero2} <em>{t.heroEm}</em></h1><p className="hero-copy">{t.heroCopy}</p><div className="hero-actions"><WhatsAppButton label={t.waEnquiry} requiredLabel={t.requiredLabel} /><a className="text-link" href="#properties">{t.exploreProperties}</a></div><p className="setup-note">{t.setupNote}</p></div><a className="listing-card" href={listingUrl} target="_blank" rel="noreferrer"><span className="listing-kicker">{t.listingRef}</span><strong>Jay Infracity Pvt. Ltd.</strong><span>{t.area}</span><span className="listing-link">{t.viewJustdial} <ArrowRight size={15} /></span></a></section>
+      <section className="intro section" id="about"><div className="section-label"><span>01</span> {t.about}</div><div className="intro-grid"><div><p className="eyebrow dark">{t.localContact}</p><h2>{t.decisions}<br /><em>{t.personal}</em></h2></div><div className="intro-copy"><p>{t.aboutP1}</p><p>{t.aboutP2}</p><WhatsAppButton label={t.start} requiredLabel={t.requiredLabel} /></div></div><div className="service-row"><article><Compass /><span>{t.explore}</span><strong>{t.exploreText}</strong></article><article><CalendarDays /><span>{t.plan}</span><strong>{t.planText}</strong></article><article><MessageCircle /><span>{t.connect}</span><strong>{t.connectText}</strong></article></div></section>
+      <section className="properties section" id="properties"><div className="section-label light"><span>02</span> {t.properties}</div><div className="section-heading-row"><div><p className="eyebrow">{t.opportunities}</p><h2>{t.propertiesTitle}<br /><em>{t.ready}</em></h2></div><p>{t.inventory}</p></div><div className="property-grid">{['01','02','03'].map(no => <article className="property-card" key={no}><div className="property-visual"><span>{t.placeholder}</span><strong>{no}</strong></div><div className="property-body"><span className="placeholder-tag">{t.supplied}</span><h3>{t.propertyName}</h3><p>{t.propertyMeta}</p><WhatsAppButton label={t.askProperty} requiredLabel={t.requiredLabel} compact /></div></article>)}</div><div className="inventory-note"><ShieldCheck /><div><strong>{t.noUnverified}</strong><p>{t.inventoryNote}</p></div></div></section>
+      <section className="contact section" id="contact"><div className="section-label"><span>03</span> {t.contact}</div><div className="contact-grid"><div><p className="eyebrow dark">{t.speak}</p><h2>{t.nextStep}<br /><em>{t.message}</em></h2><p className="contact-copy">{t.contactCopy}</p></div><div className="setup-card"><span className="placeholder-tag">{t.action}</span><MessageCircle size={42} /><h3>{t.addNumber}</h3><p>{t.numberHelp}</p><div className="number-placeholder"><Phone size={18} /><span>+91 ••••• •••••</span><small>{t.inactive}</small></div><a className="wa-button is-disabled" href="#contact" aria-disabled="true"><MessageCircle size={19} /> {t.awaiting}</a></div></div><div className="location-strip"><MapPin /><div><span>{t.addressLabel}</span><strong>{t.address}</strong></div><a href={listingUrl} target="_blank" rel="noreferrer">{t.verify} <ExternalLink size={15} /></a></div></section>
+      <section className="launch-section"><div><p className="eyebrow">{t.finalDetails}</p><h2>{t.supply}<br /><em>{t.launch}</em></h2></div><ol><li><span>1</span><p><strong>WhatsApp</strong>{t.sendNumber}</p></li><li><span>2</span><p><strong>{t.properties}</strong>{t.shareListings}</p></li><li><span>3</span><p><strong>{t.publish}</strong>{t.publishText}</p></li></ol></section>
+      <footer><a className="brand footer-brand" href="#home"><span className="brand-mark"><Building2 size={20} /></span><span>JAY INFRACITY<small>PVT. LTD.</small></span></a><p>{t.footer}</p><div><a href={listingUrl} target="_blank" rel="noreferrer">{t.listing}</a><a href="https://nowayodhya.com/the-history-of-ayodhya-tracing-the-roots-of-a-holy-city/" target="_blank" rel="noreferrer">{t.imageSource}</a><a href="#home">{t.back}</a></div></footer>
       <a className="floating-wa" href="#contact" aria-label="WhatsApp enquiry setup"><MessageCircle size={24} /><span>WhatsApp</span></a>
     </main>
   );
